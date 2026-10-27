@@ -1,0 +1,4 @@
+#!/bin/bash
+# 安装文件写入前的检查
+set -u
+exit 0

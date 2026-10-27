@@ -1,0 +1,13 @@
+{
+    ".url": {
+        "aiworkbuddy.main": {
+            "title": "OpenWorkBuddy",
+            "icon": "images/icon-{0}.png",
+            "type": "url",
+            "protocol": "http",
+            "port": "3800",
+            "url": "/",
+            "allUsers": true
+        }
+    }
+}

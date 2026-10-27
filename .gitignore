@@ -1,0 +1,14 @@
+# 构建中间产物
+.build/
+*.fpk
+*.fpk.tmp
+fnpack.exe
+
+# 运行时 payload（prepare-payload.sh 生成，体积大）
+fpk-src/app/docker/app/node_modules/
+fpk-src/app/docker/images/
+node-20-bookworm-slim.tar
+
+# 系统
+.DS_Store
+Thumbs.db

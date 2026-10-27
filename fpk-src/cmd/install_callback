@@ -1,0 +1,50 @@
+#!/bin/bash
+# 安装完成后：导入内置基础镜像（离线自包含，不依赖任何外部仓库）
+
+set -u
+
+APPNAME="${TRIM_APPNAME:-openworkbuddy}"
+TAR="${TRIM_APPDEST}/docker/images/node-20-bookworm-slim.tar"
+LOGDIR="${TRIM_PKGVAR:-/tmp}"
+mkdir -p "$LOGDIR" 2>/dev/null
+LOG="${LOGDIR}/install.log"
+
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] install_callback 开始" >>"$LOG" 2>/dev/null
+
+DOCKER=""
+for c in docker /usr/bin/docker /usr/local/bin/docker /usr/sbin/docker; do
+    if command -v "$c" >/dev/null 2>&1 || [ -x "$c" ]; then
+        DOCKER="$c"
+        break
+    fi
+done
+
+if [ -z "$DOCKER" ]; then
+    echo "[install] 未找到 docker 命令" >>"$LOG" 2>/dev/null
+    exit 0
+fi
+echo "[install] docker=$DOCKER" >>"$LOG" 2>/dev/null
+
+if [ ! -f "$TAR" ]; then
+    echo "[install] 未找到内置镜像包: $TAR" >>"$LOG" 2>/dev/null
+    exit 0
+fi
+
+if "$DOCKER" image inspect swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/node:20-bookworm-slim >/dev/null 2>&1; then
+    echo "[install] 镜像已存在，跳过导入" >>"$LOG" 2>/dev/null
+    exit 0
+fi
+
+echo "[install] 开始导入 swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/node:20-bookworm-slim" >>"$LOG" 2>/dev/null
+if timeout 900 "$DOCKER" load -i "$TAR" >>"$LOG" 2>&1; then
+    echo "[install] 镜像导入成功" >>"$LOG" 2>/dev/null
+    exit 0
+fi
+
+if command -v sudo >/dev/null 2>&1 && sudo -n timeout 900 "$DOCKER" load -i "$TAR" >>"$LOG" 2>&1; then
+    echo "[install] 通过 sudo 导入成功" >>"$LOG" 2>/dev/null
+    exit 0
+fi
+
+echo "[install] 镜像导入失败：请检查 Docker 是否已启动且应用账号有权限" >>"$LOG" 2>/dev/null
+exit 0

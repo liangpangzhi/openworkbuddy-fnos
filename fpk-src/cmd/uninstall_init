@@ -1,0 +1,7 @@
+#!/bin/bash
+
+### 卸载前：容器由应用中心移除，这里只做兜底清理
+
+docker rm -f openworkbuddy >/dev/null 2>&1 || true
+
+exit 0

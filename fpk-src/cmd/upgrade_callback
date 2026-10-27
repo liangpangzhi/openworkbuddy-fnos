@@ -1,0 +1,13 @@
+#!/bin/bash
+# 升级后：补齐数据目录，重启容器以加载新版本
+set -u
+
+VAR_DIR="${TRIM_PKGVAR:-}"
+[ -n "$VAR_DIR" ] && mkdir -p "$VAR_DIR" 2>/dev/null
+
+COMPOSE="${TRIM_APPDEST}/docker/docker-compose.yaml"
+APPNAME="${TRIM_APPNAME:-openworkbuddy}"
+if [ -f "$COMPOSE" ] && command -v docker >/dev/null 2>&1; then
+    docker compose -f "$COMPOSE" -p "$APPNAME" up -d >>"${VAR_DIR:-/tmp}/lifecycle.log" 2>&1 || true
+fi
+exit 0

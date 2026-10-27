@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  app:
+    image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/node:20-bookworm-slim
+    container_name: aiworkbuddy
+    restart: unless-stopped
+    working_dir: /app
+    command: ["sh", "/app/docker-entrypoint.sh"]
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "3800"
+      OPENWORKBUDDY_HOME: "/data"
+      NODE_ENV: "production"
+      TZ: "Asia/Shanghai"
+      NPM_CONFIG_REGISTRY: "https://registry.npmmirror.com"
+    volumes:
+      - "/var/apps/aiworkbuddy/shares/aiworkbuddy:/data"
+      - "/var/apps/aiworkbuddy/target/docker/app:/app"
+    ports:
+      - "3800:3800"

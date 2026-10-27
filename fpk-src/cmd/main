@@ -1,0 +1,68 @@
+#!/bin/bash
+# OpenWorkBuddy 生命周期脚本
+# 容器由飞牛应用中心按 config/resource 里的 docker-project 拉起/停止，
+# 这里负责：启动前确保内置镜像已导入，以及回答「在不在跑」。
+# 状态返回 0=运行中，3=未运行。
+
+set -u
+
+FILE_PATH="${TRIM_APPDEST}/docker/docker-compose.yaml"
+IMAGE_TAR="${TRIM_APPDEST}/docker/images/node-20-bookworm-slim.tar"
+LOGDIR="${TRIM_PKGVAR:-/tmp}"
+LOG="${LOGDIR}/lifecycle.log"
+mkdir -p "$LOGDIR" 2>/dev/null
+
+find_docker() {
+    for c in docker /usr/bin/docker /usr/local/bin/docker /usr/sbin/docker; do
+        if command -v "$c" >/dev/null 2>&1 || [ -x "$c" ]; then
+            echo "$c"
+            return 0
+        fi
+    done
+    return 1
+}
+
+ensure_image() {
+    DOCKER="$1"
+    if "$DOCKER" image inspect swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/library/node:20-bookworm-slim >/dev/null 2>&1; then
+        return 0
+    fi
+    [ -f "$IMAGE_TAR" ] || return 1
+    echo "[main] 导入内置镜像 $IMAGE_TAR" >>"$LOG" 2>/dev/null
+    timeout 900 "$DOCKER" load -i "$IMAGE_TAR" >>"$LOG" 2>&1
+}
+
+is_docker_running() {
+    DOCKER_NAME=""
+    if [ -f "$FILE_PATH" ]; then
+        DOCKER_NAME=$(grep "container_name" "$FILE_PATH" | awk -F ':' '{print $2}' | xargs)
+    fi
+    [ -n "$DOCKER_NAME" ] || return 1
+    docker inspect "$DOCKER_NAME" 2>/dev/null | grep -q '"Running": true'
+}
+
+case $1 in
+start)
+    if DOCKER=$(find_docker); then
+        if ! ensure_image "$DOCKER"; then
+            echo "内置镜像导入失败：请先在「Docker」中启动 Docker 服务，然后重启本应用。" >"${TRIM_TEMP_LOGFILE:-/dev/null}" 2>/dev/null
+            echo "[main] 镜像导入失败" >>"$LOG" 2>/dev/null
+            exit 1
+        fi
+    fi
+    exit 0
+    ;;
+stop)
+    exit 0
+    ;;
+status)
+    if is_docker_running; then
+        exit 0
+    else
+        exit 3
+    fi
+    ;;
+*)
+    exit 1
+    ;;
+esac
