@@ -1,5 +1,5 @@
 appname=aiworkbuddy
-version=0.17.5-1
+version=0.17.5-2
 display_name=OpenWorkBuddy
 desc=本机优先的 AI 办公工作台。用自然语言下任务，AI 自主规划并执行，直接交付 PPT / Word / Excel / HTML 等可编辑成果文件。<br><br><b>完全离线自包含</b>：基础镜像与应用依赖都打在安装包里，安装过程不需要访问 Docker Hub。安装完成后点击桌面图标即可进入工作台。<br><br>支持接入 DeepSeek、通义千问、智谱 GLM、Kimi、豆包（火山方舟）、OpenAI、Claude、OpenRouter，以及任意 OpenAI 兼容接口的自建服务和 Ollama 本地模型（BYOK，Key 只存在你自己的 NAS 上）。首次使用请在「设置 → 模型」里选择服务商并填写 API Key。<br><br>数据保存在应用的共享目录里，卸载应用不会丢。
 platform=x86
